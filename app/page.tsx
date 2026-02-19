@@ -1,9 +1,9 @@
 'use client';
 
-import React from \'react\';
-import CustomerSearch from \'../components/CustomerSearch\';
-import InteractiveMap from \'../components/InteractiveMap\';
-import ReviewValidation from \'../components/ReviewValidation\';
+import React from 'react';
+import CustomerSearch from '../components/CustomerSearch';
+import InteractiveMap from '../components/InteractiveMap';
+import ReviewValidation from '../components/ReviewValidation';
 
 export default function Home() {
   return (
