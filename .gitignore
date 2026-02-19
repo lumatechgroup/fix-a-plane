@@ -2,3 +2,4 @@
 /.next  # If using Next.js, ignore build output
 *.log   # Logs
 .env    # Secrets
+/.next
