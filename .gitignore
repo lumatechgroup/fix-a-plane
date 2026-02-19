@@ -3,3 +3,4 @@
 *.log   # Logs
 .env    # Secrets
 /.next
+.DS_Store
