@@ -1,0 +1,13 @@
+[
+  { "code": "KTEB", "name": "Teterboro Airport", "lat": 40.8501, "lng": -74.0608 },
+  { "code": "KFRG", "name": "Republic Airport", "lat": 40.7288, "lng": -73.4134 },
+  { "code": "KISP", "name": "Long Island MacArthur", "lat": 40.7952, "lng": -73.1002 },
+  { "code": "KHEF", "name": "Manassas Regional", "lat": 38.7214, "lng": -77.5154 },
+  { "code": "KIAD", "name": "Washington Dulles", "lat": 38.9445, "lng": -77.4558 },
+  { "code": "KDCA", "name": "Ronald Reagan National", "lat": 38.8512, "lng": -77.0402 },
+  { "code": "KBWI", "name": "Baltimore/Washington Intl", "lat": 39.1754, "lng": -76.6683 },
+  { "code": "KPHL", "name": "Philadelphia International", "lat": 39.8719, "lng": -75.2411 },
+  { "code": "KPNE", "name": "Northeast Philadelphia", "lat": 40.0819, "lng": -75.0106 },
+  { "code": "KACY", "name": "Atlantic City International", "lat": 39.4576, "lng": -74.5772 },
+  { "code": "3N6", "name": "Old Bridge Airport", "lat": 40.3300, "lng": -74.3300 }
+]
