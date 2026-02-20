@@ -10,11 +10,18 @@ const DynamicInteractiveMap = dynamic(() => import('../components/InteractiveMap
 export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      {/* Header */}
-      <header className="bg-blue-600 text-white p-8 text-center shadow-lg">
-        <h1 className="text-5xl font-bold mb-4">Fix-a-Plane</h1>
-        <p className="text-xl">Your marketplace for aircraft maintenance shops</p>
-      </header>
+      {/* Hero Section */}
+      <div className="relative h-96 bg-blue-900 text-white flex items-center justify-center overflow-hidden">
+        <img 
+          src="https://source.unsplash.com/random/1600x900/?aviation" 
+          alt="Aviation Hero" 
+          className="absolute inset-0 w-full h-full object-cover opacity-70" 
+        />
+        <div className="relative z-10 text-center px-4">
+          <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">Fix-a-Plane</h1>
+          <p className="text-xl md:text-3xl drop-shadow-md">Your trusted marketplace for aircraft maintenance</p>
+        </div>
+      </div>
 
       {/* Customer Search Section */}
       <section className="py-12 bg-slate-50">
