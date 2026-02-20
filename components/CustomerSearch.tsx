@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Search, MapPin, Star } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js'; // If not using lib/supabase
 // import { supabase } from '../lib/supabase'; // Uncomment if available
+import { useShopContext } from './ShopContext';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY); // Adjust if needed
-
-import airports from '../EastCoastAirports.json';
 
 // Define Shop type based on Supabase table
 interface Shop {
@@ -40,13 +39,25 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 const CustomerSearch = () => {
+  const { shops, setShops } = useShopContext();
   const [airportCode, setAirportCode] = useState('');
   const [distance, setDistance] = useState(50);
   const [aircraft, setAircraft] = useState('');
   const [services, setServices] = useState('');
   const [minRating, setMinRating] = useState(0);
-  const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(false);
+  const [airports, setAirports] = useState<any[]>([]);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+
+  useEffect(() => {
+    fetch('https://raw.githubusercontent.com/jbrooksuk/JSON-Airports/master/airports.json')
+      .then(res => res.json())
+      .then(data => setAirports(Object.values(data)));
+  }, []);
+
+  useEffect(() => {
+    handleSearch(); // Initial load with no filters
+  }, [airports]);
 
   const handleSearch = async () => {
     setLoading(true);
@@ -55,14 +66,14 @@ const CustomerSearch = () => {
     let distMeters = distance * 1609.34;
 
     if (airportCode) {
-      const airport = airports.find((a: any) => a.code.toUpperCase() === airportCode.toUpperCase());
+      const airport = airports.find((a: any) => a.iata === airportCode.toUpperCase());
       if (!airport) {
         alert('Airport not found');
         setLoading(false);
         return;
       }
-      userLat = airport.lat;
-      userLng = airport.lng;
+      userLat = airport.latitude;
+      userLng = airport.longitude;
     } else {
       distMeters = 0; // No filter
     }
@@ -115,6 +126,11 @@ const CustomerSearch = () => {
     // Filter by minRating
     filteredShops = filteredShops.filter(s => s.avg_rating! >= minRating);
 
+    // Dedupe by id
+    const shopMap = new Map<string, Shop>();
+    filteredShops.forEach(s => shopMap.set(s.id, s));
+    filteredShops = Array.from(shopMap.values());
+
     // Sort: premium first, then by distance
     filteredShops.sort((a, b) => {
       const tierA = a.tier === 'premium' ? 1 : 0;
@@ -125,10 +141,6 @@ const CustomerSearch = () => {
     setShops(filteredShops);
     setLoading(false);
   };
-
-  useEffect(() => {
-    handleSearch(); // Initial load with no filters
-  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -186,7 +198,7 @@ const CustomerSearch = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {shops.map((shop) => (
-              <div key={shop.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div key={shop.id} className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer" onClick={() => setSelectedShop(shop)}>
                 <img
                   src={`https://source.unsplash.com/random/400x200/?airplane&sig=${shop.id}`}
                   alt={shop.name}
@@ -197,6 +209,10 @@ const CustomerSearch = () => {
                   <div className="flex items-center text-slate-500 mb-4">
                     <MapPin className="w-5 h-5 mr-2" />
                     {shop.address || shop.airport_code}
+                  </div>
+                  <div className="flex items-center text-slate-500 mb-4">
+                    <MapPin className="w-5 h-5 mr-2" />
+                    {shop.distance?.toFixed(1)} miles away
                   </div>
                   <div className="flex items-center mb-4">
                     {[...Array(5)].map((_, i) => (
@@ -214,6 +230,7 @@ const CustomerSearch = () => {
                     {shop.phone && (
                       <a
                         href={`tel:${shop.phone}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl text-center font-bold transition-all"
                       >
                         📞 Call
@@ -222,6 +239,7 @@ const CustomerSearch = () => {
                     {shop.email && (
                       <a
                         href={`mailto:${shop.email}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl text-center font-bold transition-all"
                       >
                         ✉️ Email
@@ -239,6 +257,24 @@ const CustomerSearch = () => {
             <MapPin className="w-16 h-16 text-slate-400 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-slate-500 mb-2">No shops found</h3>
             <p className="text-slate-400 max-w-md mx-auto">Try searching with different criteria.</p>
+          </div>
+        )}
+
+        {selectedShop && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => setSelectedShop(null)}>
+            <div className="bg-white rounded-lg p-6 max-w-lg w-full m-4" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-2xl font-bold mb-4">{selectedShop.name}</h2>
+              <p><strong>Address:</strong> {selectedShop.address}</p>
+              <p><strong>Contact:</strong> {selectedShop.contact_person}</p>
+              <p><strong>Phone:</strong> {selectedShop.phone}</p>
+              <p><strong>Email:</strong> {selectedShop.email}</p>
+              <p><strong>Description:</strong> {selectedShop.description}</p>
+              <p><strong>Aircraft:</strong> {selectedShop.specializations_aircraft.join(', ')}</p>
+              <p><strong>Services:</strong> {selectedShop.specializations_services.join(', ')}</p>
+              <p><strong>Tier:</strong> {selectedShop.tier}</p>
+              <p><strong>Average Rating:</strong> {selectedShop.avg_rating?.toFixed(1)}</p>
+              <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded" onClick={() => setSelectedShop(null)}>Close</button>
+            </div>
           </div>
         )}
       </section>
