@@ -5,9 +5,10 @@ import { MapPin, Plane, Navigation, Search, Layers } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '../lib/supabase';
+import { LatLngExpression } from 'leaflet';
 
-// Fix Leaflet default icon
-delete L.Icon.Default.prototype._getIconUrl;
+// Fix Leaflet default icon (with type assertion for TS)
+delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
@@ -21,7 +22,7 @@ const InteractiveMap = () => {
   const [minRating, setMinRating] = useState(0);
   const [viewMode, setViewMode] = useState('vfr'); // vfr, satellite, light
   const [shops, setShops] = useState([]);
-  const [center, setCenter] = useState([40.730610, -73.935242]); // Default NYC area
+  const [center, setCenter] = useState<LatLngExpression>([40.730610, -73.935242]); // Default NYC area
   const mapRef = useRef(null);
 
   useEffect(() => {
@@ -36,7 +37,9 @@ const InteractiveMap = () => {
         .bindPopup(`<b>${shop.name}</b><br>${shop.location}`);
     });
 
-    return () => map.remove();
+    return () => {
+      map.remove(); // Cleanup on unmount
+    };
   }, [shops, center]);
 
   const handleSearch = async () => {
@@ -48,7 +51,6 @@ const InteractiveMap = () => {
     setShops(data || []);
     if (data[0]) setCenter([data[0].lat, data[0].lng]);
   };
-
 return (
     <div className="flex flex-col h-[600px] bg-white">
       {/* Search Header */}
