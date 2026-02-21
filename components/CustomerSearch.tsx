@@ -120,7 +120,7 @@ const CustomerSearch = () => {
     filteredShops = filteredShops.map(s => ({
       ...s,
       avg_rating: ratingsMap[s.id] ? ratingsMap[s.id].sum / ratingsMap[s.id].count : 0,
-      distance: userLat && userLng && s.location ? calculateDistance(userLat, userLng, s.location.coordinates[1], s.location.coordinates[0]) : 0,
+      distance: userLat && userLng && s.location && s.location.coordinates ? calculateDistance(userLat, userLng, s.location.coordinates[1], s.location.coordinates[0]) : 0,
     }));
 
     // Filter by minRating

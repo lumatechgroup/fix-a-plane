@@ -27,11 +27,13 @@ const InteractiveMap = () => {
       let totalLat = 0;
       let totalLng = 0;
       shops.forEach(shop => {
-        const lat = shop.location.coordinates[1];
-        const lng = shop.location.coordinates[0];
-        L.marker([lat, lng]).addTo(map);
-        totalLat += lat;
-        totalLng += lng;
+        if (shop.location && shop.location.coordinates && shop.location.coordinates.length >= 2) {
+          const lat = shop.location.coordinates[1];
+          const lng = shop.location.coordinates[0];
+          L.marker([lat, lng]).addTo(map);
+          totalLat += lat;
+          totalLng += lng;
+        }
       });
       const avgLat = totalLat / shops.length;
       const avgLng = totalLng / shops.length;
