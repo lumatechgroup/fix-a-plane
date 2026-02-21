@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import ReviewValidation from '../components/ReviewValidation';
 import { ShopProvider } from '../components/ShopContext';
 
-const DynamicInteractiveMap = dynamic(() => import('../components/InteractiveMap'), { ssr: false });
+import InteractiveMap from '../components/InteractiveMap';
 
 export default function Home() {
   return (
@@ -37,7 +37,7 @@ export default function Home() {
         <section className="py-12">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-3xl font-bold mb-8 text-center">Explore on the Map</h2>
-            <DynamicInteractiveMap />
+            <InteractiveMap />
           </div>
         </section>
 
