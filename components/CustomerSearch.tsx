@@ -5,6 +5,7 @@ import { Search, MapPin, Star } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js'; // If not using lib/supabase
 // import { supabase } from '../lib/supabase'; // Uncomment if available
 import { useShopContext } from './ShopContext';
+import Papa from 'papaparse';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY); // Adjust if needed
 
@@ -28,7 +29,7 @@ interface Shop {
 }
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // km
+  const R = 3959; // miles
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -50,9 +51,17 @@ const CustomerSearch = () => {
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/jbrooksuk/JSON-Airports/master/airports.json')
-      .then(res => res.json())
-      .then(data => setAirports(Object.values(data)));
+    fetch('/airports.csv')
+      .then(res => res.text())
+      .then(csvText => {
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            setAirports(results.data);
+          }
+        });
+      });
   }, []);
 
   useEffect(() => {
@@ -66,14 +75,15 @@ const CustomerSearch = () => {
     let distMeters = distance * 1609.34;
 
     if (airportCode) {
-      const airport = airports.find((a: any) => a.iata === airportCode.toUpperCase());
+      const code = airportCode.toUpperCase();
+      const airport = airports.find((a: any) => a.iata_code === code || a.local_code === code || a.ident === code || a.ident === 'K' + code);
       if (!airport) {
         alert('Airport not found');
         setLoading(false);
         return;
       }
-      userLat = airport.latitude;
-      userLng = airport.longitude;
+      userLat = parseFloat(airport.latitude_deg);
+      userLng = parseFloat(airport.longitude_deg);
     } else {
       distMeters = 0; // No filter
     }
@@ -123,6 +133,11 @@ const CustomerSearch = () => {
       distance: userLat && userLng && s.location && s.location.coordinates ? calculateDistance(userLat, userLng, s.location.coordinates[1], s.location.coordinates[0]) : 0,
     }));
 
+    // Enforce distance filter client-side
+    if (userLat && distance > 0) {
+      filteredShops = filteredShops.filter(s => s.distance <= distance);
+    }
+
     // Filter by minRating
     filteredShops = filteredShops.filter(s => s.avg_rating! >= minRating);
 
@@ -148,7 +163,7 @@ const CustomerSearch = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <input
             type="text"
-            placeholder="Airport code (e.g., KTEB)"
+            placeholder="Airport code (e.g., 1B1, 3N6, JFK)"
             value={airportCode}
             onChange={(e) => setAirportCode(e.target.value)}
             className="px-4 py-2 rounded-lg border border-slate-300 focus:border-blue-500 outline-none"
